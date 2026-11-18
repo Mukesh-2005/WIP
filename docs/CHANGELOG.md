@@ -34,4 +34,4 @@
 - Persistence: services/matchRepository.js (async; browser storage now, FastAPI later) saves the in-progress match (restored after refresh, a running match comes back paused) and archives finished matches. Match history list added to the screen.
 - Added automated tests (Vitest + jsdom): 65 tests for score, undo, squad, rules, formats, persistence and the full UI workflow. Run with `npm test` in frontend/.
 - Open: players-per-side/minimum/red-card values are set in data/mockMatch.js for now; the organiser-facing editor belongs to the tournament setup module. minPlayersToContinue = 3 is a placeholder default.
-- Not pushed: waiting for Suraj to share repository access.
+- Repository: added a root .gitignore (secrets, venv, node_modules, build output, editor files). Pushed to branch WIP of the personal repo as Suraj instructed; nothing pushed to main.
