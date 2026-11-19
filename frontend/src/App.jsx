@@ -1,22 +1,44 @@
-import { useEffect, useState } from "react";
-import MatchCentre from "./components/MatchCentre";
-import { matchRepository } from "./services/matchRepository";
+import { useState } from "react";
+import { useFixtureStore } from "./hooks/useFixtureStore";
+import AppShell from "./components/AppShell";
+import FixtureManager from "./components/fixtures/FixtureManager";
+import PublicTournamentPage from "./components/fixtures/PublicTournamentPage";
+import FixtureMatch from "./components/FixtureMatch";
+import DemoMatch from "./components/DemoMatch";
 
-// Loads a saved in-progress match (if any), then shows the Match Centre.
-// Loading is async on purpose: the FastAPI version will be async too.
-export default function App() {
-  const [record, setRecord] = useState(undefined); // undefined = loading, null = nothing saved
+// App owns the fixture data (so every screen sees the same fixtures) and
+// decides which screen to show. A tiny state switch is enough for now; a
+// router can replace it when more pages exist.
+//   fixtures = organiser's Fixture Manager     public = what the public sees
+//   match    = one fixture in the Match Centre  demo   = standalone demo match
+export default function App({ initialView = "fixtures" }) {
+  const store = useFixtureStore();
+  const [view, setView] = useState({ name: initialView, fixtureId: null });
+  const go = (name, fixtureId = null) => setView({ name, fixtureId });
 
-  useEffect(() => {
-    let alive = true;
-    matchRepository.loadCurrent().then((r) => {
-      if (alive) setRecord(r);
-    });
-    return () => {
-      alive = false;
-    };
-  }, []);
+  // The public site has its own header; everything else sits inside the organiser layout.
+  if (view.name === "public") {
+    return store.loading ? (
+      <p className="hint loading">Loading…</p>
+    ) : (
+      <PublicTournamentPage
+        tournament={store.base.tournament}
+        published={store.state.published}
+        teams={store.base.teams}
+        pitches={store.base.pitches}
+        onBack={() => go("fixtures")}
+      />
+    );
+  }
 
-  if (record === undefined) return <p className="hint loading">Loading…</p>;
-  return <MatchCentre initialRecord={record} />;
+  return (
+    <AppShell activeView={view.name === "match" ? "fixtures" : view.name} onNavigate={go}>
+      {view.name === "demo" && <DemoMatch />}
+      {view.name !== "demo" && store.loading && <p className="hint loading">Loading…</p>}
+      {!store.loading && view.name === "fixtures" && <FixtureManager store={store} onOpenMatch={(id) => go("match", id)} />}
+      {!store.loading && view.name === "match" && (
+        <FixtureMatch fixtureId={view.fixtureId} store={store} onBack={() => go("fixtures")} />
+      )}
+    </AppShell>
+  );
 }

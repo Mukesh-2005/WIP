@@ -11,9 +11,11 @@ export default function TimerControls({
     return (
       <div className="controls">
         <p className="ended-note">Match ended</p>
-        <button className="btn btn-primary" onClick={onReset}>
-          New match
-        </button>
+        {onReset && (
+          <button className="btn btn-primary" onClick={onReset}>
+            New match
+          </button>
+        )}
       </div>
     );
   }

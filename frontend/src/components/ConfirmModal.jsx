@@ -6,6 +6,7 @@ export default function ConfirmModal({
   message,
   confirmText = "Confirm",
   cancelText = "Cancel",
+  confirmClass = "btn-danger", // e.g. "btn-primary" for a non-destructive action
   children,
   onConfirm,
   onCancel,
@@ -35,7 +36,7 @@ export default function ConfirmModal({
           <button className="btn btn-ghost" onClick={onCancel}>
             {cancelText}
           </button>
-          <button className="btn btn-danger" onClick={onConfirm} autoFocus>
+          <button className={`btn ${confirmClass}`} onClick={onConfirm} autoFocus>
             {confirmText}
           </button>
         </div>

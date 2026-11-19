@@ -13,6 +13,7 @@ import { buildMatchRecord, restoreStatus } from "../state/matchRecord";
 import { matchRepository } from "../services/matchRepository";
 import { describeRules, validateRules } from "../config/rules";
 import { newId } from "../utils/id";
+import { scheduleLine } from "../fixtures/matchFromFixture";
 import ScoreBoard from "./ScoreBoard";
 import TimerControls from "./TimerControls";
 import EventForm from "./EventForm";
@@ -24,11 +25,13 @@ import MatchHistory from "./MatchHistory";
 
 // `match` comes from the API later (teams + tournament rules).
 // `initialRecord` is a saved match to restore, or null for a fresh one.
-export default function MatchCentre({ match = mockMatch, initialRecord = null }) {
+// When opened from a fixture, `match` also carries `fixtureId` and `schedule`,
+// and `onMatchEnded({ fixtureId, score })` tells the Fixture Manager the result.
+export default function MatchCentre({ match = mockMatch, initialRecord = null, onMatchEnded = null }) {
   const { teams, tournament } = match;
   const { rules, sport: sportId } = tournament;
 
-  const [matchId, setMatchId] = useState(() => initialRecord?.id ?? newId());
+  const [matchId, setMatchId] = useState(() => initialRecord?.id ?? match.fixtureId ?? newId());
   const [startedAt, setStartedAt] = useState(initialRecord?.startedAt ?? null);
   const [endedAt, setEndedAt] = useState(initialRecord?.endedAt ?? null);
   const [confirmingEnd, setConfirmingEnd] = useState(false);
@@ -120,6 +123,7 @@ export default function MatchCentre({ match = mockMatch, initialRecord = null })
       })
     );
     setHistory(await matchRepository.listHistory());
+    onMatchEnded?.({ fixtureId: match.fixtureId ?? null, score });
   }
 
   function handleReset() {
@@ -128,7 +132,7 @@ export default function MatchCentre({ match = mockMatch, initialRecord = null })
     setMatchId(newId());
     setStartedAt(null);
     setEndedAt(null);
-    matchRepository.clearCurrent();
+    matchRepository.clearCurrent(match.fixtureId ?? null);
   }
 
   const formDisabled = timer.status === "idle" || timer.status === "ended";
@@ -153,6 +157,7 @@ export default function MatchCentre({ match = mockMatch, initialRecord = null })
     <main className="app">
       <ScoreBoard
         tournament={tournament.name}
+        scheduleText={scheduleLine(match.schedule)}
         rulesText={describeRules(rules)}
         home={teams.home}
         away={teams.away}
@@ -168,7 +173,7 @@ export default function MatchCentre({ match = mockMatch, initialRecord = null })
         onPause={timer.pause}
         onResume={handleResume}
         onEnd={() => setConfirmingEnd(true)}
-        onReset={handleReset}
+        onReset={match.fixtureId ? undefined : handleReset}
       />
 
       {timer.status !== "ended" && <IssueBanner issues={issues} status={timer.status} />}

@@ -3,7 +3,7 @@ import { StrictMode, act } from "react";
 import { createRoot } from "react-dom/client";
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import MatchCentre from "../components/MatchCentre";
-import App from "../App";
+import DemoMatch from "../components/DemoMatch";
 import { makeMatch, away, home } from "./helpers";
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
@@ -115,7 +115,7 @@ describe("Match Centre: the full workflow", () => {
   });
 
   it("a finished match is saved to history and can be retrieved after a reload", async () => {
-    await mount(<App />);
+    await mount(<DemoMatch />);
     await click("Start match");
     await addEvent("goal", "home", 1); // mock data: John Doe
     await click("End match");
@@ -128,7 +128,7 @@ describe("Match Centre: the full workflow", () => {
     // simulate a page reload
     await act(async () => root.unmount());
     container.remove();
-    await mount(<App />);
+    await mount(<DemoMatch />);
     await act(async () => {}); // let the async load finish
 
     expect(text(".status")).toBe("Full time");
@@ -153,13 +153,13 @@ describe("Match Centre: the full workflow", () => {
 
 describe("Match Centre: restoring a saved match", () => {
   it("a match that was running comes back paused with its score and events", async () => {
-    await mount(<App />);
+    await mount(<DemoMatch />);
     await click("Start match");
     await addEvent("goal", "away", 5);
     await act(async () => root.unmount());
     container.remove();
 
-    await mount(<App />);
+    await mount(<DemoMatch />);
     await act(async () => {});
     expect(text(".status")).toBe("Paused");
     expect(score()).toBe("0 - 1");

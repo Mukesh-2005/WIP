@@ -6,6 +6,7 @@ export function buildMatchRecord({ matchId, match, status, clockSeconds, started
   const { teams, tournament } = match;
   return {
     id: matchId,
+    fixtureId: match.fixtureId ?? null, // set when the match was opened from a fixture
     tournamentId: tournament.id,
     sport: tournament.sport,
     rules: tournament.rules,

@@ -7,10 +7,11 @@ const STATUS_LABELS = {
   ended: "Full time",
 };
 
-export default function ScoreBoard({ tournament, rulesText, home, away, score, time, status }) {
+export default function ScoreBoard({ tournament, scheduleText, rulesText, home, away, score, time, status }) {
   return (
     <section className="scoreboard" aria-label="Scoreboard">
       <p className="tournament">{tournament}</p>
+      {scheduleText && <p className="rules-line schedule-line">{scheduleText}</p>}
       {rulesText && <p className="rules-line">{rulesText}</p>}
 
       <div className="scoreboard-row">

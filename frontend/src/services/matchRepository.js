@@ -5,8 +5,13 @@
 //   saveCurrent(r)  -> PUT    /api/v1/matches/{id}
 //   archiveMatch(r) -> PUT    /api/v1/matches/{id}  (status "ended")
 //   listHistory()   -> GET    /api/v1/matches?status=ended
+//
+// A match opened from a fixture is saved under that fixture's id, so every
+// fixture keeps its own in-progress match. The standalone demo match (no
+// fixture) uses the single "current" slot, exactly as before.
 
 const KEYS = { current: "turf.match.current", history: "turf.match.history" };
+const currentKey = (fixtureId) => (fixtureId ? `${KEYS.current}.${fixtureId}` : KEYS.current);
 
 function read(key, fallback) {
   try {
@@ -26,17 +31,18 @@ function write(key, value) {
 }
 
 export const matchRepository = {
-  async loadCurrent() {
-    return read(KEYS.current, null);
+  // fixtureId is optional: leave it out for the standalone demo match.
+  async loadCurrent(fixtureId = null) {
+    return read(currentKey(fixtureId), null);
   },
 
   async saveCurrent(record) {
-    write(KEYS.current, record);
+    write(currentKey(record.fixtureId), record);
   },
 
-  async clearCurrent() {
+  async clearCurrent(fixtureId = null) {
     try {
-      globalThis.localStorage?.removeItem(KEYS.current);
+      globalThis.localStorage?.removeItem(currentKey(fixtureId));
     } catch {
       /* ignore */
     }
